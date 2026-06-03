@@ -10,9 +10,9 @@ export class HistoryService {
 
   constructor(@InjectModel(History.name) private historyModel: Model<HistoryDocument>) {}
 
-  async create(planIds: string[], resultId: string, count: number): Promise<HistoryDocument> {
+  async create(planIds: string[], resultId: string, count: number, title?: string): Promise<HistoryDocument> {
     const history = new this.historyModel({
-      title: `方案对比 ${dayjs().format('YYYY-MM-DD HH:mm')}`,
+      title: title || `方案对比 ${dayjs().format('YYYY-MM-DD HH:mm')}`,
       planIds,
       resultId,
       count,

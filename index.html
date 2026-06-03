@@ -1003,10 +1003,29 @@
             compareResult: null
         };
 
-        function initApp() {
+        async function initApp() {
             setupEventListeners();
             renderPlans();
-            renderHistoryList();
+            await loadHistoryFromServer();
+        }
+        
+        async function loadHistoryFromServer() {
+            try {
+                const response = await fetch('/api/history');
+                const data = await response.json();
+                if (data.code === 200 && data.data) {
+                    appState.history = data.data.map(item => ({
+                        id: item._id,
+                        title: item.title,
+                        date: item.date,
+                        count: item.count,
+                        resultId: item.resultId
+                    }));
+                    renderHistoryList();
+                }
+            } catch (error) {
+                console.error('加载历史记录失败:', error);
+            }
         }
 
         function setupEventListeners() {
@@ -1234,7 +1253,7 @@
                     fileName: p.file ? p.file.name : null
                 }));
                 
-                const response = await fetch('http://localhost:3000/api/analyze', {
+                const response = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1260,7 +1279,7 @@
         async function pollTask(taskId) {
             const checkStatus = async () => {
                 try {
-                    const response = await fetch(`http://localhost:3000/api/analyze/${taskId}`);
+                    const response = await fetch(`/api/analyze/${taskId}`);
                     const data = await response.json();
                     
                     if (data.code === 200 && data.data) {
@@ -1516,22 +1535,39 @@
             });
         }
 
-        function saveToHistory() {
-            const title = appState.plans.length > 0 
-                ? appState.plans.map(p => p.name).join(' vs ') 
-                : '保险方案对比';
+        async function saveToHistory() {
+            if (!appState.compareResult) {
+                showToast('没有可保存的对比结果');
+                return;
+            }
             
-            const newRecord = {
-                id: Date.now(),
-                title: title.length > 30 ? title.substring(0, 30) + '...' : title,
-                date: new Date().toLocaleString('zh-CN'),
-                count: appState.plans.length || 3
-            };
-            
-            appState.history.unshift(newRecord);
-            renderHistoryList();
-            
-            showToast('保存成功！');
+            try {
+                const title = appState.plans.length > 0 
+                    ? appState.plans.map(p => p.name || '未命名方案').join(' vs ') 
+                    : '保险方案对比';
+                
+                const response = await fetch('/api/history', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: title.length > 30 ? title.substring(0, 30) + '...' : title,
+                        planIds: appState.plans.map(p => p.id),
+                        resultId: appState.compareResult._id || appState.compareResult.id,
+                        count: appState.plans.length
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.code === 200) {
+                    await loadHistoryFromServer();
+                    showToast('保存成功！');
+                } else {
+                    showToast('保存失败，请重试');
+                }
+            } catch (error) {
+                console.error('保存历史记录失败:', error);
+                showToast('保存失败，请重试');
+            }
         }
 
         function renderHistoryList() {
