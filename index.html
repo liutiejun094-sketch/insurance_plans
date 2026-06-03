@@ -1006,25 +1006,26 @@
         async function initApp() {
             setupEventListeners();
             renderPlans();
-            await loadHistoryFromServer();
+            loadHistoryFromLocal();
         }
         
-        async function loadHistoryFromServer() {
+        function loadHistoryFromLocal() {
             try {
-                const response = await fetch('/api/history');
-                const data = await response.json();
-                if (data.code === 200 && data.data) {
-                    appState.history = data.data.map(item => ({
-                        id: item._id,
-                        title: item.title,
-                        date: item.date,
-                        count: item.count,
-                        resultId: item.resultId
-                    }));
+                const saved = localStorage.getItem('insurance_history');
+                if (saved) {
+                    appState.history = JSON.parse(saved);
                     renderHistoryList();
                 }
             } catch (error) {
                 console.error('加载历史记录失败:', error);
+            }
+        }
+        
+        function saveHistoryToLocal() {
+            try {
+                localStorage.setItem('insurance_history', JSON.stringify(appState.history));
+            } catch (error) {
+                console.error('保存历史记录失败:', error);
             }
         }
 
@@ -1535,39 +1536,29 @@
             });
         }
 
-        async function saveToHistory() {
+        function saveToHistory() {
             if (!appState.compareResult) {
                 showToast('没有可保存的对比结果');
                 return;
             }
             
-            try {
-                const title = appState.plans.length > 0 
-                    ? appState.plans.map(p => p.name || '未命名方案').join(' vs ') 
-                    : '保险方案对比';
-                
-                const response = await fetch('/api/history', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        title: title.length > 30 ? title.substring(0, 30) + '...' : title,
-                        planIds: appState.plans.map(p => p.id),
-                        resultId: appState.compareResult._id || appState.compareResult.id,
-                        count: appState.plans.length
-                    })
-                });
-                
-                const data = await response.json();
-                if (data.code === 200) {
-                    await loadHistoryFromServer();
-                    showToast('保存成功！');
-                } else {
-                    showToast('保存失败，请重试');
-                }
-            } catch (error) {
-                console.error('保存历史记录失败:', error);
-                showToast('保存失败，请重试');
-            }
+            const title = appState.plans.length > 0 
+                ? appState.plans.map(p => p.name || '未命名方案').join(' vs ') 
+                : '保险方案对比';
+            
+            const newRecord = {
+                id: Date.now(),
+                title: title.length > 30 ? title.substring(0, 30) + '...' : title,
+                date: new Date().toLocaleString('zh-CN'),
+                count: appState.plans.length,
+                result: appState.compareResult
+            };
+            
+            appState.history.unshift(newRecord);
+            saveHistoryToLocal();
+            renderHistoryList();
+            
+            showToast('保存成功！');
         }
 
         function renderHistoryList() {
@@ -1592,8 +1583,14 @@
         }
 
         function viewHistory(id) {
-            switchPage('result-page');
-            document.getElementById('bottom-nav').style.display = 'none';
+            const record = appState.history.find(h => h.id === id);
+            if (record && record.result) {
+                appState.compareResult = record.result;
+                switchPage('result-page');
+                document.getElementById('bottom-nav').style.display = 'none';
+            } else {
+                showToast('历史记录不存在或已过期');
+            }
         }
 
         function showToast(message) {

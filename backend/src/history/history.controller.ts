@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Body, Param, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Delete, Param, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { HistoryService } from './history.service';
 
@@ -6,21 +6,6 @@ import { HistoryService } from './history.service';
 @Controller('api/history')
 export class HistoryController {
   constructor(private readonly historyService: HistoryService) {}
-
-  @Post()
-  async create(@Body() body: { title: string; planIds: string[]; resultId: string; count: number }) {
-    try {
-      const history = await this.historyService.create(
-        body.planIds,
-        body.resultId,
-        body.count,
-        body.title
-      );
-      return { code: 200, data: history };
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
 
   @Get()
   async findAll() {
