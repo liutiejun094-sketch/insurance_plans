@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: insurance-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: insurance
+
+  redis:
+    image: redis:7-alpine
+    container_name: insurance-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  backend:
+    build: .
+    container_name: insurance-backend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+      - redis
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongodb:27017/insurance
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - LLM_PROVIDER=${LLM_PROVIDER}
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_MODEL=${LLM_MODEL}
+    volumes:
+      - ./uploads:/app/uploads
+
+volumes:
+  mongodb_data:
+  redis_data:

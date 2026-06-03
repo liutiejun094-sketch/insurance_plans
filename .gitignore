@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+backend/dist/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads
+backend/uploads/
+
+# Test coverage
+coverage/
+
+# Docker volumes (local only)
+data/

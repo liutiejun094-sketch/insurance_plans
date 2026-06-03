@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>保险方案对比AI</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --wx-primary: #07c160;
+            --wx-primary-dark: #06ad56;
+            --wx-primary-light: #eaf9ef;
+            --wx-danger: #fa5151;
+            --wx-danger-light: #ffe9e9;
+            --wx-warning: #ff976a;
+            --wx-warning-light: #fff0e6;
+            --wx-text: #333333;
+            --wx-text-secondary: #969799;
+            --wx-text-weak: #c9c9cd;
+            --wx-bg: #f5f5f5;
+            --wx-bg-gray: #f7f8fa;
+            --wx-border: #ebedf0;
+            --wx-white: #ffffff;
+            --wx-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--wx-bg);
+            min-height: 100vh;
+            color: var(--wx-text);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            max-width: 750px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: var(--wx-bg-gray);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .page {
+            display: none;
+            min-height: 100vh;
+            padding-bottom: 60px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        /* 微信小程序风格导航栏 */
+        .nav-bar {
+            background: var(--wx-white);
+            padding-top: env(safe-area-inset-top, 0);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            box-shadow: 0 1px 0 var(--wx-border);
+        }
+
+        .nav-bar-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 44px;
+            padding: 0 16px;
+            position: relative;
+        }
+
+        .nav-bar-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--wx-text);
+        }
+
+        .nav-bar-back {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--wx-text);
+            display: none;
+        }
+
+        .page.has-back .nav-bar-back {
+            display: block;
+        }
+
+        /* 内容区域 */
+        .content {
+            padding: 16px;
+        }
+
+        /* 免责声明 - 微信小程序样式 */
+        .disclaimer {
+            background: var(--wx-warning-light);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
+        .disclaimer-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+            color: var(--wx-warning);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .disclaimer-text {
+            color: var(--wx-text-secondary);
+            line-height: 1.6;
+        }
+
+        /* 卡片样式 - 微信风格 */
+        .card {
+            background: var(--wx-white);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--wx-shadow);
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--wx-text);
+            margin-bottom: 12px;
+        }
+
+        /* 方案输入区域 */
+        .plan-input-wrapper {
+            position: relative;
+        }
+
+        .plan-input-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .plan-input-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--wx-text);
+        }
+
+        .plan-remove-btn {
+            color: var(--wx-danger);
+            font-size: 13px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .plan-remove-btn:hover {
+            background: var(--wx-danger-light);
+        }
+
+        .plan-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 1px solid var(--wx-border);
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: vertical;
+            color: var(--wx-text);
+            background: var(--wx-white);
+            transition: border-color 0.2s;
+        }
+
+        .plan-textarea:focus {
+            outline: none;
+            border-color: var(--wx-primary);
+        }
+
+        .plan-textarea::placeholder {
+            color: var(--wx-text-weak);
+        }
+
+        .plan-name-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--wx-border);
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 8px;
+            transition: border-color 0.2s;
+        }
+
+        .plan-name-input:focus {
+            outline: none;
+            border-color: var(--wx-primary);
+        }
+
+        /* 添加方案按钮 */
+        .add-plan-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 14px;
+            background: var(--wx-primary-light);
+            color: var(--wx-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+
+        .add-plan-btn:hover {
+            background: #d9f3e5;
+        }
+
+        .add-plan-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* 按钮样式 - 微信风格 */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--wx-primary);
+            color: var(--wx-white);
+        }
+
+        .btn-primary:hover {
+            background: var(--wx-primary-dark);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            background: var(--wx-text-weak);
+            cursor: not-allowed;
+        }
+
+        .btn-default {
+            background: var(--wx-white);
+            color: var(--wx-text);
+            border: 1px solid var(--wx-border);
+        }
+
+        .btn-default:hover {
+            background: var(--wx-bg);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+        }
+
+        /* 进度页面 */
+        .progress-container {
+            text-align: center;
+            padding: 60px 16px;
+        }
+
+        .progress-circle-wrap {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+            position: relative;
+        }
+
+        .progress-circle-wrap svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-bg {
+            fill: none;
+            stroke: var(--wx-border);
+            stroke-width: 8;
+        }
+
+        .progress-bar {
+            fill: none;
+            stroke: var(--wx-primary);
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 339;
+            stroke-dashoffset: 339;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--wx-primary);
+        }
+
+        .progress-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--wx-text);
+            margin-bottom: 8px;
+        }
+
+        .progress-desc {
+            font-size: 14px;
+            color: var(--wx-text-secondary);
+        }
+
+        .step-list {
+            margin-top: 40px;
+            text-align: left;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--wx-border);
+        }
+
+        .step-item:last-child {
+            border-bottom: none;
+        }
+
+        .step-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 18px;
+            background: var(--wx-bg);
+            color: var(--wx-text-weak);
+            flex-shrink: 0;
+        }
+
+        .step-item.completed .step-icon {
+            background: var(--wx-primary-light);
+            color: var(--wx-primary);
+        }
+
+        .step-item.processing .step-icon {
+            background: var(--wx-primary-light);
+            color: var(--wx-primary);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-size: 15px;
+            color: var(--wx-text);
+        }
+
+        .step-status {
+            font-size: 13px;
+            color: var(--wx-text-secondary);
+            margin-top: 2px;
+        }
+
+        .step-item.completed .step-status {
+            color: var(--wx-primary);
+        }
+
+        /* Tab 切换 */
+        .tab-bar {
+            display: flex;
+            background: var(--wx-white);
+            padding: 4px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            gap: 4px;
+        }
+
+        .tab-item {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--wx-text-secondary);
+            transition: all 0.2s;
+        }
+
+        .tab-item.active {
+            background: var(--wx-primary);
+            color: var(--wx-white);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 对比表格 */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 8px;
+            background: var(--wx-white);
+        }
+
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+
+        .compare-table th,
+        .compare-table td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--wx-border);
+            font-size: 14px;
+        }
+
+        .compare-table th {
+            background: var(--wx-bg-gray);
+            font-weight: 500;
+            color: var(--wx-text-secondary);
+            position: sticky;
+            top: 0;
+        }
+
+        .compare-table td {
+            color: var(--wx-text);
+        }
+
+        .compare-table .section-row td {
+            background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+            color: var(--wx-white);
+            font-weight: 500;
+            padding: 14px 10px;
+        }
+
+        .compare-table .plan-header {
+            font-weight: 600;
+            color: var(--wx-primary);
+            text-align: center;
+        }
+
+        /* 差异卡片 */
+        .diff-card {
+            background: var(--wx-white);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--wx-shadow);
+            border-left: 4px solid;
+        }
+
+        .diff-card.advantage {
+            border-left-color: var(--wx-primary);
+        }
+
+        .diff-card.disadvantage {
+            border-left-color: var(--wx-danger);
+        }
+
+        .diff-card.neutral {
+            border-left-color: var(--wx-warning);
+        }
+
+        .diff-card.same {
+            border-left-color: var(--wx-text-weak);
+        }
+
+        .diff-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .diff-badge.advantage {
+            background: var(--wx-primary-light);
+            color: var(--wx-primary);
+        }
+
+        .diff-badge.disadvantage {
+            background: var(--wx-danger-light);
+            color: var(--wx-danger);
+        }
+
+        .diff-badge.neutral {
+            background: var(--wx-warning-light);
+            color: var(--wx-warning);
+        }
+
+        .diff-badge.same {
+            background: var(--wx-bg);
+            color: var(--wx-text-secondary);
+        }
+
+        .diff-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--wx-text);
+            margin-bottom: 12px;
+        }
+
+        .diff-compare {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .diff-plan-box {
+            padding: 10px;
+            background: var(--wx-bg-gray);
+            border-radius: 6px;
+        }
+
+        .diff-plan-name {
+            font-size: 12px;
+            color: var(--wx-text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .diff-plan-value {
+            font-size: 14px;
+            color: var(--wx-text);
+            font-weight: 500;
+        }
+
+        /* 历史记录 */
+        .history-item {
+            background: var(--wx-white);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--wx-shadow);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-item:hover {
+            background: var(--wx-bg);
+        }
+
+        .history-item:active {
+            transform: scale(0.99);
+        }
+
+        .history-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--wx-text);
+            margin-bottom: 8px;
+        }
+
+        .history-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+            color: var(--wx-text-secondary);
+        }
+
+        .history-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 14px;
+            color: var(--wx-text-secondary);
+        }
+
+        /* 底部导航 - 微信小程序风格 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 750px;
+            background: var(--wx-white);
+            display: flex;
+            padding: 8px 0;
+            padding-bottom: calc(8px + env(safe-area-inset-bottom, 0));
+            box-shadow: 0 -1px 0 var(--wx-border);
+            z-index: 1000;
+        }
+
+        .nav-tab-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+            padding: 4px;
+            color: var(--wx-text-secondary);
+            transition: color 0.2s;
+        }
+
+        .nav-tab-item.active {
+            color: var(--wx-primary);
+        }
+
+        .nav-tab-icon {
+            font-size: 22px;
+        }
+
+        .nav-tab-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        /* 隐藏元素 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* 提示文字 */
+        .hint-text {
+            font-size: 12px;
+            color: var(--wx-text-secondary);
+            text-align: center;
+            padding: 8px 0;
+        }
+
+        /* 输入方式切换 */
+        .input-type-tabs {
+            display: flex;
+            background: var(--wx-bg-gray);
+            border-radius: 6px;
+            padding: 3px;
+            margin-bottom: 12px;
+        }
+
+        .input-type-tab {
+            flex: 1;
+            padding: 8px;
+            text-align: center;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--wx-text-secondary);
+            transition: all 0.2s;
+        }
+
+        .input-type-tab.active {
+            background: var(--wx-white);
+            color: var(--wx-primary);
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        /* 上传区域 */
+        .upload-area {
+            border: 2px dashed var(--wx-border);
+            border-radius: 8px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--wx-white);
+        }
+
+        .upload-area:hover {
+            border-color: var(--wx-primary);
+            background: var(--wx-primary-light);
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            font-size: 14px;
+            color: var(--wx-text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .upload-hint {
+            font-size: 12px;
+            color: var(--wx-text-weak);
+        }
+
+        /* 文件预览 */
+        .file-preview {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: var(--wx-bg-gray);
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+
+        .file-icon {
+            font-size: 32px;
+            margin-right: 12px;
+        }
+
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-size: 14px;
+            color: var(--wx-text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: var(--wx-text-secondary);
+            margin-top: 2px;
+        }
+
+        .file-remove {
+            color: var(--wx-danger);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 首页 - 方案输入 -->
+        <div class="page active" id="home-page">
+            <div class="nav-bar">
+                <div class="nav-bar-content">
+                    <div class="nav-bar-title">保险方案对比AI</div>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="disclaimer">
+                    <div class="disclaimer-header">
+                        <span>⚠️</span>
+                        <span>免责声明</span>
+                    </div>
+                    <div class="disclaimer-text">
+                        本工具仅供保险方案信息提取与差异化对比，不提供任何保险推荐、购买建议或收益预测。最终决策请以正式保险合同及专业保险顾问意见为准。
+                    </div>
+                </div>
+
+                <div id="plans-container">
+                    <!-- 动态生成的方案输入区域 -->
+                </div>
+
+                <div class="add-plan-btn" id="add-plan-btn">
+                    <span>+</span>
+                    <span>添加方案</span>
+                </div>
+
+                <div class="hint-text">至少需要添加2份方案才能进行对比</div>
+
+                <button class="btn btn-primary" id="start-compare" disabled>
+                    开始对比
+                </button>
+            </div>
+        </div>
+
+        <!-- 进度页面 -->
+        <div class="page has-back" id="progress-page">
+            <div class="nav-bar">
+                <div class="nav-bar-content">
+                    <div class="nav-bar-back" id="progress-back">←</div>
+                    <div class="nav-bar-title">正在分析</div>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="progress-container">
+                    <div class="progress-circle-wrap">
+                        <svg width="120" height="120">
+                            <circle class="progress-bg" cx="60" cy="60" r="54"/>
+                            <circle class="progress-bar" cx="60" cy="60" r="54"/>
+                        </svg>
+                        <div class="progress-text" id="progress-text">0%</div>
+                    </div>
+                    
+                    <div class="progress-title">智能解析中</div>
+                    <div class="progress-desc">请稍候，正在分析您的保险方案</div>
+                    
+                    <div class="step-list" id="step-list">
+                        <div class="step-item" data-step="1">
+                            <div class="step-icon">📄</div>
+                            <div class="step-content">
+                                <div class="step-title">方案解析</div>
+                                <div class="step-status">等待中</div>
+                            </div>
+                        </div>
+                        <div class="step-item" data-step="2">
+                            <div class="step-icon">🔍</div>
+                            <div class="step-content">
+                                <div class="step-title">信息提取</div>
+                                <div class="step-status">等待中</div>
+                            </div>
+                        </div>
+                        <div class="step-item" data-step="3">
+                            <div class="step-icon">🧠</div>
+                            <div class="step-content">
+                                <div class="step-title">智能分析</div>
+                                <div class="step-status">等待中</div>
+                            </div>
+                        </div>
+                        <div class="step-item" data-step="4">
+                            <div class="step-icon">📊</div>
+                            <div class="step-content">
+                                <div class="step-title">差异对比</div>
+                                <div class="step-status">等待中</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 结果页面 -->
+        <div class="page has-back" id="result-page">
+            <div class="nav-bar">
+                <div class="nav-bar-content">
+                    <div class="nav-bar-back" id="result-back">←</div>
+                    <div class="nav-bar-title">对比结果</div>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="disclaimer">
+                    <div class="disclaimer-header">
+                        <span>⚠️</span>
+                        <span>免责声明</span>
+                    </div>
+                    <div class="disclaimer-text">
+                        本工具仅供保险方案信息提取与差异化对比，不提供任何保险推荐、购买建议或收益预测。最终决策请以正式保险合同及专业保险顾问意见为准。
+                    </div>
+                </div>
+
+                <div class="tab-bar">
+                    <div class="tab-item active" data-tab="table">对比表格</div>
+                    <div class="tab-item" data-tab="diff">关键差异</div>
+                </div>
+
+                <div class="tab-content active" id="table-tab">
+                    <div class="table-wrapper">
+                        <table class="compare-table" id="compare-table">
+                        </table>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="diff-tab">
+                    <div id="diff-container"></div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-default" id="back-home-btn">返回首页</button>
+                    <button class="btn btn-primary" id="save-history-btn">保存历史</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 历史记录页面 -->
+        <div class="page" id="history-page">
+            <div class="nav-bar">
+                <div class="nav-bar-content">
+                    <div class="nav-bar-title">历史记录</div>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div id="history-list">
+                    <!-- 历史记录项 -->
+                </div>
+
+                <div class="empty-state hidden" id="empty-history">
+                    <div class="empty-icon">📚</div>
+                    <div class="empty-text">暂无历史记录</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 我的页面 -->
+        <div class="page" id="my-page">
+            <div class="nav-bar">
+                <div class="nav-bar-content">
+                    <div class="nav-bar-title">我的</div>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="card">
+                    <div class="empty-state">
+                        <div class="empty-icon">👤</div>
+                        <div class="empty-text">功能开发中...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav" id="bottom-nav">
+            <div class="nav-tab-item active" data-page="home">
+                <div class="nav-tab-icon">🏠</div>
+                <div class="nav-tab-label">首页</div>
+            </div>
+            <div class="nav-tab-item" data-page="history">
+                <div class="nav-tab-icon">📚</div>
+                <div class="nav-tab-label">历史</div>
+            </div>
+            <div class="nav-tab-item" data-page="my">
+                <div class="nav-tab-icon">👤</div>
+                <div class="nav-tab-label">我的</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const appState = {
+            plans: [],
+            currentStep: 0,
+            history: [],
+            compareResult: null
+        };
+
+        function initApp() {
+            setupEventListeners();
+            renderPlans();
+            renderHistoryList();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('add-plan-btn').addEventListener('click', addPlan);
+            document.getElementById('start-compare').addEventListener('click', startCompare);
+            document.getElementById('back-home-btn').addEventListener('click', goToHome);
+            document.getElementById('save-history-btn').addEventListener('click', saveToHistory);
+            document.getElementById('progress-back').addEventListener('click', goToHome);
+            document.getElementById('result-back').addEventListener('click', goToHome);
+
+            document.querySelectorAll('.tab-item').forEach(tab => {
+                tab.addEventListener('click', switchTab);
+            });
+
+            document.querySelectorAll('.nav-tab-item').forEach(nav => {
+                nav.addEventListener('click', switchMainPage);
+            });
+        }
+
+        function addPlan() {
+            const plan = {
+                id: Date.now(),
+                name: '',
+                content: '',
+                inputType: 'text',
+                file: null
+            };
+            appState.plans.push(plan);
+            renderPlans();
+            updateStartButton();
+        }
+
+        function removePlan(id) {
+            appState.plans = appState.plans.filter(p => p.id !== id);
+            renderPlans();
+            updateStartButton();
+        }
+
+        function updatePlanName(id, name) {
+            const plan = appState.plans.find(p => p.id === id);
+            if (plan) {
+                plan.name = name;
+            }
+        }
+
+        function updatePlanContent(id, content) {
+            const plan = appState.plans.find(p => p.id === id);
+            if (plan) {
+                plan.content = content;
+            }
+            updateStartButton();
+        }
+
+        function switchInputType(id, type) {
+            const plan = appState.plans.find(p => p.id === id);
+            if (plan) {
+                plan.inputType = type;
+                renderPlans();
+            }
+        }
+
+        async function handleFileUpload(id, files) {
+            if (files && files.length > 0) {
+                const plan = appState.plans.find(p => p.id === id);
+                if (plan) {
+                    const file = files[0];
+                    plan.file = {
+                        name: file.name,
+                        size: file.size,
+                        type: file.type
+                    };
+                    plan.inputType = 'file';
+                    plan.fileContent = '';
+                    
+                    try {
+                        if (file.type === 'application/pdf') {
+                            showToast('正在解析PDF文件...');
+                            const arrayBuffer = await file.arrayBuffer();
+                            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                            let textContent = '';
+                            
+                            for (let i = 1; i <= pdf.numPages; i++) {
+                                const page = await pdf.getPage(i);
+                                const content = await page.getTextContent();
+                                const pageText = content.items.map(item => item.str).join(' ');
+                                textContent += pageText + '\n';
+                            }
+                            
+                            plan.fileContent = textContent;
+                            showToast('PDF文件解析成功！');
+                        } else {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                plan.fileContent = e.target.result;
+                                showToast('文件上传成功！');
+                            };
+                            reader.onerror = function() {
+                                showToast('文件读取失败，请重试');
+                            };
+                            reader.readAsText(file);
+                        }
+                    } catch (error) {
+                        console.error('文件解析失败:', error);
+                        showToast('文件解析失败，请尝试TXT格式');
+                    }
+                    
+                    renderPlans();
+                    updateStartButton();
+                }
+            }
+        }
+
+        function removeFile(id) {
+            const plan = appState.plans.find(p => p.id === id);
+            if (plan) {
+                plan.file = null;
+                renderPlans();
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function renderPlans() {
+            const container = document.getElementById('plans-container');
+            
+            if (appState.plans.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = appState.plans.map((plan, index) => {
+                const inputType = plan.inputType || 'text';
+                return `
+                <div class="card plan-input-wrapper" data-plan-id="${plan.id}">
+                    <div class="plan-input-header">
+                        <span class="plan-input-title">方案${index + 1}</span>
+                        ${appState.plans.length > 1 ? `<span class="plan-remove-btn" onclick="removePlan(${plan.id})">删除</span>` : ''}
+                    </div>
+                    <input 
+                        type="text" 
+                        class="plan-name-input" 
+                        placeholder="请输入方案名称（可选）"
+                        value="${plan.name}"
+                        oninput="updatePlanName(${plan.id}, this.value)"
+                    />
+                    
+                    <!-- 输入方式切换 -->
+                    <div class="input-type-tabs">
+                        <div class="input-type-tab ${inputType === 'text' ? 'active' : ''}" onclick="switchInputType(${plan.id}, 'text')">文本</div>
+                        <div class="input-type-tab ${inputType === 'file' ? 'active' : ''}" onclick="switchInputType(${plan.id}, 'file')">文件</div>
+                    </div>
+                    
+                    <!-- 文本输入 -->
+                    <div class="input-type-content ${inputType === 'text' ? '' : 'hidden'}">
+                        <textarea 
+                            class="plan-textarea" 
+                            placeholder="请粘贴保险条款内容，包括但不限于：&#10;• 保险公司和产品名称&#10;• 保障责任（重疾/中症/轻症等）&#10;• 保费和缴费期限&#10;• 免责条款等重要信息"
+                            oninput="updatePlanContent(${plan.id}, this.value)"
+                        >${plan.content || ''}</textarea>
+                    </div>
+                    
+                    <!-- 文件上传 -->
+                    <div class="input-type-content ${inputType === 'file' ? '' : 'hidden'}">
+                        <input type="file" id="file-input-${plan.id}" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" onchange="handleFileUpload(${plan.id}, this.files)" style="display: none;">
+                        <div class="upload-area" onclick="document.getElementById('file-input-${plan.id}').click()">
+                            <div class="upload-icon">📄</div>
+                            <div class="upload-text">点击上传文件</div>
+                            <div class="upload-hint">支持 PDF、Word、Excel、TXT</div>
+                        </div>
+                        ${plan.file ? `
+                        <div class="file-preview">
+                            <span class="file-icon">📄</span>
+                            <div class="file-info">
+                                <div class="file-name">${plan.file.name}</div>
+                                <div class="file-size">${formatFileSize(plan.file.size)}</div>
+                            </div>
+                            <span class="file-remove" onclick="removeFile(${plan.id})">×</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function updateStartButton() {
+            const btn = document.getElementById('start-compare');
+            const count = appState.plans.length;
+            
+            // 检查每个方案是否有内容
+            const validPlans = appState.plans.filter(plan => {
+                if (plan.inputType === 'text') {
+                    return plan.content && plan.content.trim().length > 0;
+                } else if (plan.inputType === 'file') {
+                    return plan.file !== null;
+                }
+                return false;
+            });
+            
+            if (validPlans.length >= 2) {
+                btn.disabled = false;
+                btn.textContent = `开始对比 (已添加${validPlans.length}份方案)`;
+            } else {
+                btn.disabled = true;
+                btn.textContent = `开始对比 (还需添加${2 - validPlans.length}份有效方案)`;
+            }
+        }
+
+        async function startCompare() {
+            switchPage('progress-page');
+            document.getElementById('bottom-nav').style.display = 'none';
+            resetProgress();
+            
+            try {
+                const plansData = appState.plans.map(p => ({
+                    id: p.id.toString(),
+                    name: p.name || '未命名方案',
+                    content: p.inputType === 'file' ? (p.fileContent || '') : p.content,
+                    inputType: p.inputType,
+                    fileName: p.file ? p.file.name : null
+                }));
+                
+                const response = await fetch('http://localhost:3000/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ plans: plansData })
+                });
+                
+                const data = await response.json();
+                
+                if (data.code === 200 && data.data && data.data.taskId) {
+                    await pollTask(data.data.taskId);
+                } else {
+                    showToast('启动分析任务失败');
+                    goToHome();
+                }
+            } catch (error) {
+                console.error('对比失败:', error);
+                showToast('对比失败，请重试');
+                goToHome();
+            }
+        }
+        
+        async function pollTask(taskId) {
+            const checkStatus = async () => {
+                try {
+                    const response = await fetch(`http://localhost:3000/api/analyze/${taskId}`);
+                    const data = await response.json();
+                    
+                    if (data.code === 200 && data.data) {
+                        const progress = data.data;
+                        
+                        if (progress.status === 'completed') {
+                            console.log('任务完成，结果:', progress.result);
+                            appState.compareResult = progress.result;
+                            switchPage('result-page');
+                            return false;
+                        } else if (progress.status === 'failed') {
+                            showToast('对比失败: ' + (progress.message || '未知错误'));
+                            goToHome();
+                            return false;
+                        } else {
+                            document.getElementById('progress-text').textContent = progress.progress + '%';
+                            updateProgressCircle(progress.progress);
+                            return true;
+                        }
+                    }
+                    return true;
+                } catch (error) {
+                    console.error('轮询失败:', error);
+                    showToast('获取结果失败');
+                    goToHome();
+                    return false;
+                }
+            };
+            
+            const continuePolling = await checkStatus();
+            if (continuePolling) {
+                const interval = setInterval(async () => {
+                    const shouldContinue = await checkStatus();
+                    if (!shouldContinue) {
+                        clearInterval(interval);
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetProgress() {
+            appState.currentStep = 0;
+            document.getElementById('progress-text').textContent = '0%';
+            document.querySelectorAll('.step-item').forEach((step, i) => {
+                step.classList.remove('completed', 'processing');
+                step.querySelector('.step-status').textContent = '等待中';
+            });
+            updateProgressCircle(0);
+        }
+
+        function animateProgress() {
+            const steps = [
+                { percent: 25, step: 1 },
+                { percent: 50, step: 2 },
+                { percent: 75, step: 3 },
+                { percent: 100, step: 4 }
+            ];
+
+            steps.forEach((item, i) => {
+                setTimeout(() => {
+                    updateProgress(item.percent, item.step);
+                    if (item.percent === 100) {
+                        setTimeout(() => {
+                            switchPage('result-page');
+                        }, 800);
+                    }
+                }, i * 1000);
+            });
+        }
+
+        function updateProgress(percent, step) {
+            document.getElementById('progress-text').textContent = percent + '%';
+            updateProgressCircle(percent);
+
+            document.querySelectorAll('.step-item').forEach((item, i) => {
+                if (i + 1 < step) {
+                    item.classList.add('completed');
+                    item.classList.remove('processing');
+                    item.querySelector('.step-status').textContent = '已完成';
+                } else if (i + 1 === step) {
+                    item.classList.add('processing');
+                    item.classList.remove('completed');
+                    item.querySelector('.step-status').textContent = '处理中...';
+                }
+            });
+        }
+
+        function updateProgressCircle(percent) {
+            const circle = document.querySelector('.progress-bar');
+            const circumference = 339;
+            const offset = circumference - (percent / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+        }
+
+        function switchTab(e) {
+            const tabId = e.currentTarget.dataset.tab;
+            
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId + '-tab').classList.add('active');
+        }
+
+        function switchMainPage(e) {
+            const page = e.currentTarget.dataset.page;
+            
+            document.querySelectorAll('.nav-tab-item').forEach(n => n.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+
+            switchPage(page + '-page');
+            document.getElementById('bottom-nav').style.display = 'flex';
+        }
+
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            if (pageId === 'result-page' && appState.compareResult) {
+                console.log('渲染结果页面，数据:', appState.compareResult);
+                renderResult(appState.compareResult);
+            }
+        }
+        
+        function renderResult(result) {
+            console.log('renderResult called with:', result);
+            renderCompareTable(result);
+            renderDiffCards(result);
+        }
+        
+        function renderCompareTable(result) {
+            const table = document.getElementById('compare-table');
+            const plans = result.plans || [];
+            
+            if (plans.length === 0) {
+                table.innerHTML = '<tbody><tr><td colspan="100">暂无数据</td></tr></tbody>';
+                return;
+            }
+            
+            const headers = plans.map((p, i) => `<th class="plan-header">方案${String.fromCharCode(65 + i)}</th>`).join('');
+            
+            const rows = [];
+            
+            const sections = [
+                { title: '基础信息', fields: ['company', 'productName', 'insuranceType', 'coveragePeriod', 'paymentPeriod', 'waitingPeriod'] },
+                { title: '核心保障', fields: ['generalMedical', 'criticalIllness', 'mildIllness', 'middleIllness', 'protonTherapy', 'deathCoverage'] },
+                { title: '费用相关', fields: ['premium'] }
+            ];
+            
+            const fieldLabels = {
+                company: '保险公司',
+                productName: '产品名称',
+                insuranceType: '保险类型',
+                coveragePeriod: '保障期限',
+                paymentPeriod: '缴费期限',
+                waitingPeriod: '等待期',
+                generalMedical: '一般医疗',
+                criticalIllness: '重疾医疗',
+                mildIllness: '轻症保障',
+                middleIllness: '中症保障',
+                protonTherapy: '质子重离子',
+                deathCoverage: '身故保障',
+                premium: '年保费'
+            };
+            
+            const formatValue = (val) => {
+                if (val === null || val === undefined) return '-';
+                if (typeof val === 'object') {
+                    return Object.entries(val)
+                        .filter(([k, v]) => v !== null && v !== undefined)
+                        .map(([k, v]) => {
+                            const labelMap = {
+                                coverage: '保额',
+                                deductible: '免赔额',
+                                reimbursementRatio: '报销比例',
+                                types: '种类',
+                                payoutRatio: '赔付比例',
+                                payoutCount: '赔付次数'
+                            };
+                            const label = labelMap[k] || k;
+                            return `${label}: ${v}`;
+                        })
+                        .join('，');
+                }
+                return String(val);
+            };
+            
+            sections.forEach(section => {
+                rows.push(`<tr class="section-row"><td colspan="${plans.length + 1}">${section.title}</td></tr>`);
+                
+                section.fields.forEach(field => {
+                    const values = plans.map(p => {
+                        const val = p.parsedData && p.parsedData[field];
+                        return formatValue(val);
+                    }).join('</td><td>');
+                    
+                    rows.push(`<tr><td>${fieldLabels[field]}</td><td>${values}</td></tr>`);
+                });
+            });
+            
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>对比项</th>
+                        ${headers}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows.join('')}
+                </tbody>
+            `;
+        }
+        
+        function renderDiffCards(result) {
+            const container = document.getElementById('diff-container');
+            const differences = result.differences || [];
+            
+            if (differences.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">暂无差异数据</div></div>';
+                return;
+            }
+            
+            const cards = differences.map(diff => {
+                const type = diff.impact === 'advantage' ? '有利' : diff.impact === 'disadvantage' ? '不利' : '一般';
+                const typeClass = diff.impact === 'advantage' ? 'advantage' : diff.impact === 'disadvantage' ? 'disadvantage' : 'neutral';
+                
+                const planBoxes = diff.values.map(item => `
+                    <div class="diff-plan-box">
+                        <div class="diff-plan-name">${item.planName}</div>
+                        <div class="diff-plan-value">${item.value}</div>
+                    </div>
+                `).join('');
+                
+                return `
+                    <div class="diff-card ${typeClass}">
+                        <span class="diff-badge ${typeClass}">${type}</span>
+                        <div class="diff-title">${diff.fieldLabel}</div>
+                        <div class="diff-compare">${planBoxes}</div>
+                        <div style="margin-top: 10px; font-size: 13px; color: #666;">${diff.summary}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = cards;
+        }
+
+        function goToHome() {
+            switchPage('home-page');
+            document.getElementById('bottom-nav').style.display = 'flex';
+            
+            document.querySelectorAll('.nav-tab-item').forEach(n => {
+                n.classList.toggle('active', n.dataset.page === 'home');
+            });
+        }
+
+        function saveToHistory() {
+            const title = appState.plans.length > 0 
+                ? appState.plans.map(p => p.name).join(' vs ') 
+                : '保险方案对比';
+            
+            const newRecord = {
+                id: Date.now(),
+                title: title.length > 30 ? title.substring(0, 30) + '...' : title,
+                date: new Date().toLocaleString('zh-CN'),
+                count: appState.plans.length || 3
+            };
+            
+            appState.history.unshift(newRecord);
+            renderHistoryList();
+            
+            showToast('保存成功！');
+        }
+
+        function renderHistoryList() {
+            const container = document.getElementById('history-list');
+            const emptyState = document.getElementById('empty-history');
+
+            if (appState.history.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                container.innerHTML = appState.history.map(record => `
+                    <div class="history-item" data-id="${record.id}" onclick="viewHistory(${record.id})">
+                        <div class="history-title">${record.title}</div>
+                        <div class="history-meta">
+                            <span>📅 ${record.date}</span>
+                            <span>📊 ${record.count}份方案</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function viewHistory(id) {
+            switchPage('result-page');
+            document.getElementById('bottom-nav').style.display = 'none';
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0,0,0,0.75);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 9999;
+                animation: fadeIn 0.2s ease-out;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 2000);
+        }
+
+        // 全局暴露函数
+        window.removePlan = removePlan;
+        window.updatePlanName = updatePlanName;
+        window.updatePlanContent = updatePlanContent;
+        window.switchInputType = switchInputType;
+        window.handleFileUpload = handleFileUpload;
+        window.removeFile = removeFile;
+        window.viewHistory = viewHistory;
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
