@@ -24,7 +24,7 @@ export const PROVIDER_CONFIGS: Record<string, { baseUrl: string; models: string[
     models: ['claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307'],
   },
   deepseek: {
-    baseUrl: 'https://api.deepseek.com/v1/chat/completions',
+    baseUrl: 'https://api.deepseek.com/chat/completions',
     models: ['deepseek-chat', 'deepseek-coder'],
   },
 };
