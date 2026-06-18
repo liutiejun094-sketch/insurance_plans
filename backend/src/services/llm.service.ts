@@ -158,7 +158,7 @@ export class LlmService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${LLM_CONFIG.apiKey?.substring(0, 8)}...`,
+          'Authorization': `Bearer ${LLM_CONFIG.apiKey}`,
         },
       };
 
@@ -168,7 +168,7 @@ export class LlmService {
           data += chunk;
         });
         res.on('end', () => {
-          this.logger.log(`LLM测试 - HTTP状态: ${res.statusCode}, 响应长度: ${data.length}`);
+          this.logger.log(`LLM测试 - HTTP状态: ${res.statusCode}, Key前8位: ${LLM_CONFIG.apiKey?.substring(0, 8)}..., 响应长度: ${data.length}`);
           if (res.statusCode !== 200) {
             resolve({ success: false, status: res.statusCode, response: data.substring(0, 500) });
           } else {
