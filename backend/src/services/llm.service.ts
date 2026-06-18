@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as https from 'https';
 import { LLM_CONFIG, PROVIDER_CONFIGS } from '../config/llm.config';
-import { PARSE_SYSTEM_PROMPT, INSURANCE_PARSE_PROMPT, COMPARE_PROMPT } from '../config/prompts.config';
+import { PARSE_SYSTEM_PROMPT, CHAT_SYSTEM_PROMPT, INSURANCE_PARSE_PROMPT, COMPARE_PROMPT } from '../config/prompts.config';
 import { ParsedInsurance, Difference } from '../types';
 
 interface RequestOptions {
@@ -122,6 +122,68 @@ export class LlmService {
       req.on('error', (error) => {
         this.logger.error(`LLM请求失败: ${error}`);
         reject(error);
+      });
+
+      req.on('timeout', () => {
+        this.logger.error('LLM请求超时');
+        req.destroy();
+        reject(new Error('LLM请求超时'));
+      });
+
+      req.setTimeout(30000);
+      req.write(JSON.stringify(payload));
+      req.end();
+    });
+  }
+
+  /**
+   * 直接测试 LLM API，返回原始响应（用于调试）
+   */
+  async testLLM(prompt: string = '你好，请用一句话介绍自己'): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const { baseUrl } = this.getProviderConfig();
+      const url = new URL(baseUrl);
+
+      const payload: any = {
+        model: LLM_CONFIG.model,
+        messages: [
+          { role: 'system', content: CHAT_SYSTEM_PROMPT },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.7,
+        max_tokens: 2048,
+      };
+
+      const reqOptions: https.RequestOptions = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${LLM_CONFIG.apiKey?.substring(0, 8)}...`,
+        },
+      };
+
+      const req = https.request(url, reqOptions, (res) => {
+        let data = '';
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+        res.on('end', () => {
+          this.logger.log(`LLM测试 - HTTP状态: ${res.statusCode}, 响应长度: ${data.length}`);
+          if (res.statusCode !== 200) {
+            resolve({ success: false, status: res.statusCode, response: data.substring(0, 500) });
+          } else {
+            try {
+              const result = JSON.parse(data);
+              resolve({ success: true, status: res.statusCode, answer: result.choices?.[0]?.message?.content?.substring(0, 200) });
+            } catch (error) {
+              resolve({ success: false, status: res.statusCode, parseError: error.message, rawResponse: data.substring(0, 500) });
+            }
+          }
+        });
+      });
+
+      req.on('error', (error) => {
+        resolve({ success: false, error: error.message });
       });
 
       req.write(JSON.stringify(payload));

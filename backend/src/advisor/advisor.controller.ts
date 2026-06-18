@@ -1,6 +1,7 @@
-import { Controller, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Body, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AdvisorService, ChatResult } from './advisor.service';
+import { LlmService } from '../services/llm.service';
 
 class ChatDto {
   question: string;
@@ -10,7 +11,27 @@ class ChatDto {
 @ApiTags('advisor')
 @Controller('api/advisor')
 export class AdvisorController {
-  constructor(private readonly advisorService: AdvisorService) {}
+  constructor(
+    private readonly advisorService: AdvisorService,
+    private readonly llmService: LlmService,
+  ) {}
+
+  @Get('test')
+  @ApiOperation({ summary: '测试LLM API连接' })
+  async testLLM() {
+    try {
+      const result = await this.llmService.testLLM();
+      return {
+        code: 200,
+        data: result,
+      };
+    } catch (error) {
+      return {
+        code: 500,
+        data: { success: false, error: error.message },
+      };
+    }
+  }
 
   @Post('chat')
   @ApiOperation({ summary: '保险顾问智能体对话接口' })
