@@ -87,15 +87,39 @@ log_info "【步骤2/6】获取最新代码..."
 mkdir -p "$PROJECT_DIR"
 cd "$PROJECT_DIR"
 
-# 如果目录为空，先克隆
-if [ ! -d ".git" ] || [ "$FORCE" = true ]; then
-    log_info "首次部署或强制模式，克隆仓库..."
-    rm -rf ./* 2>/dev/null || true
+# 判断目录状态
+if [ -d ".git" ] && [ "$FORCE" = false ]; then
+    # 已是 git 仓库，直接拉取
+    log_info "尝试从 GitHub 拉取最新代码..."
+    if git pull origin main; then
+        log_info "代码更新成功"
+    else
+        log_warn "git pull 失败，使用本地代码继续部署..."
+    fi
+elif [ -d ".git" ] && [ "$FORCE" = true ]; then
+    # 强制模式，备份后重新克隆
+    log_info "强制模式：备份旧目录并重新克隆..."
+    mv "$PROJECT_DIR" "${PROJECT_DIR}_backup_$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$PROJECT_DIR"
+    cd "$PROJECT_DIR"
+    if git clone "$GIT_REPO" .; then
+        log_info "代码克隆成功"
+    else
+        log_error "git clone 失败"
+        exit 1
+    fi
+else
+    # 目录非空但不是 git 仓库，清空后克隆
+    if [ -n "$(ls -A . 2>/dev/null)" ]; then
+        log_warn "目录非空且非 git 仓库，清空后重新克隆..."
+        rm -rf ./* ./.??* 2>/dev/null || true
+    fi
+    
+    log_info "首次部署，克隆仓库..."
     if git clone "$GIT_REPO" .; then
         log_info "代码克隆成功"
     else
         log_error "git clone 失败，尝试手动下载..."
-        # 备选方案：使用 curl/wget 下载
         if command -v curl >/dev/null 2>&1; then
             curl -sL https://github.com/liutiejun094-sketch/insurance_plans/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
             log_info "代码下载成功"
@@ -103,15 +127,6 @@ if [ ! -d ".git" ] || [ "$FORCE" = true ]; then
             log_error "无法获取代码，请手动上传或检查网络"
             exit 1
         fi
-    fi
-else
-    # 尝试 git pull
-    log_info "尝试从 GitHub 拉取最新代码..."
-    if git pull origin main; then
-        log_info "代码更新成功"
-    else
-        log_warn "git pull 失败，使用本地代码继续部署..."
-        # 保留本地代码继续部署
     fi
 fi
 
