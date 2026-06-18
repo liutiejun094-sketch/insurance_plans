@@ -137,13 +137,23 @@ log_info "【步骤3/6】安装后端依赖..."
 
 cd "$BACKEND_DIR"
 
-# 检查 package-lock.json 是否存在
-if [ ! -f "package-lock.json" ] || [ "$FORCE" = true ]; then
-    log_info "重新安装依赖..."
+# 检查 typescript 是否已安装
+if [ ! -f "node_modules/.bin/tsc" ] || [ "$FORCE" = true ]; then
+    log_info "安装依赖（包含 TypeScript 编译工具）..."
     rm -rf node_modules package-lock.json
-    npm install 2>&1 | tail -5
+    npm install 2>&1 | tail -10
+    if [ $? -ne 0 ]; then
+        log_error "依赖安装失败"
+        exit 1
+    fi
 else
-    log_info "使用缓存依赖，跳过安装..."
+    log_info "依赖已存在，跳过安装..."
+fi
+
+# 确保 typescript 可用
+if ! npx tsc --version >/dev/null 2>&1; then
+    log_warn "TypeScript 未正确安装，尝试补充安装..."
+    npm install --save-dev typescript @types/node 2>&1 | tail -5
 fi
 
 log_info "后端依赖安装完成"
@@ -154,19 +164,27 @@ log_info "后端依赖安装完成"
 log_info "【步骤4/6】编译后端代码..."
 
 cd "$BACKEND_DIR"
-npm run build 2>&1 | tail -10
+rm -rf dist  # 清理旧的编译产物
 
-if [ $? -ne 0 ]; then
-    log_error "后端编译失败"
+# 使用 npx 确保能找到 tsc
+if npx tsc; then
+    log_info "后端编译成功"
+else
+    log_error "后端编译失败，请检查代码错误"
     exit 1
 fi
-
-log_info "后端编译成功"
 
 #------------------------------------------------------------------------------
 # 5. 启动后端服务
 #------------------------------------------------------------------------------
 log_info "【步骤5/6】启动后端服务..."
+
+# 检查编译产物
+if [ ! -f "$BACKEND_DIR/dist/main.js" ]; then
+    log_error "编译产物不存在：$BACKEND_DIR/dist/main.js"
+    log_error "请检查 TypeScript 编译是否成功"
+    exit 1
+fi
 
 # 停止旧进程
 pm2 stop insurance-backend 2>/dev/null || true
