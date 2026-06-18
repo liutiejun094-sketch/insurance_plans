@@ -9,6 +9,7 @@ import { PlanModule } from './plan/plan.module';
 import { AnalyzeModule } from './analyze/analyze.module';
 import { CompareModule } from './compare/compare.module';
 import { HistoryModule } from './history/history.module';
+import { AdvisorModule } from './advisor/advisor.module';
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ dotenv.config();
     AnalyzeModule,
     CompareModule,
     HistoryModule,
+    AdvisorModule,
   ],
 })
 export class AppModule {}

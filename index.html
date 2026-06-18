@@ -648,6 +648,297 @@
             color: var(--wx-text-secondary);
         }
 
+        /* ========== 保险顾问智能体样式 ========== */
+        
+        /* 悬浮入口按钮 */
+        .advisor-float-btn {
+            position: fixed;
+            right: 20px;
+            bottom: 120px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #1890FF 0%, #096DD9 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+            z-index: 9998;
+            transition: transform 0.3s ease;
+            animation: advisorBreathing 1.5s ease-in-out infinite;
+        }
+
+        .advisor-float-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .advisor-float-btn .avatar {
+            font-size: 28px;
+        }
+
+        .advisor-float-btn .online-dot {
+            position: absolute;
+            left: 4px;
+            bottom: 4px;
+            width: 12px;
+            height: 12px;
+            background: #52c41a;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        .advisor-float-btn .tooltip {
+            position: absolute;
+            right: 68px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .advisor-float-btn:hover .tooltip {
+            opacity: 1;
+        }
+
+        @keyframes advisorBreathing {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        /* 抽屉容器 */
+        .advisor-drawer {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 380px;
+            height: 100vh;
+            background: #fff;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.3s ease;
+        }
+
+        .advisor-drawer.open {
+            right: 0;
+        }
+
+        .advisor-drawer .drawer-header {
+            padding: 16px;
+            background: #fff;
+            border-bottom: 1px solid var(--wx-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .advisor-drawer .drawer-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--wx-text);
+        }
+
+        .advisor-drawer .drawer-close {
+            font-size: 24px;
+            color: var(--wx-text-secondary);
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .advisor-drawer .scope-hint {
+            padding: 8px 16px;
+            background: var(--wx-bg-gray);
+            font-size: 12px;
+            color: var(--wx-text-secondary);
+        }
+
+        .advisor-drawer .message-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .advisor-drawer .message-bubble {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .advisor-drawer .message-bubble.user {
+            align-self: flex-end;
+            background: #1890FF;
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .advisor-drawer .message-bubble.assistant {
+            align-self: flex-start;
+            background: var(--wx-bg-gray);
+            color: var(--wx-text);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--wx-border);
+        }
+
+        .advisor-drawer .message-bubble.error {
+            background: var(--wx-danger-light);
+            color: var(--wx-danger);
+            border: 1px solid var(--wx-danger);
+        }
+
+        .advisor-drawer .message-time {
+            font-size: 11px;
+            color: var(--wx-text-weak);
+            margin-top: 4px;
+            text-align: center;
+        }
+
+        .advisor-drawer .quick-questions {
+            padding: 12px 16px;
+            border-top: 1px solid var(--wx-border);
+            background: #fff;
+        }
+
+        .advisor-drawer .quick-questions-title {
+            font-size: 12px;
+            color: var(--wx-text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .advisor-drawer .quick-question-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .advisor-drawer .quick-question-item {
+            padding: 8px 12px;
+            background: var(--wx-primary-light);
+            color: var(--wx-primary);
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--wx-primary);
+        }
+
+        .advisor-drawer .quick-question-item:hover {
+            background: var(--wx-primary);
+            color: #fff;
+        }
+
+        .advisor-drawer .input-area {
+            padding: 12px 16px;
+            border-top: 1px solid var(--wx-border);
+            background: #fff;
+            display: flex;
+            gap: 8px;
+        }
+
+        .advisor-drawer .input-area input {
+            flex: 1;
+            height: 44px;
+            padding: 0 16px;
+            border: 1px solid var(--wx-border);
+            border-radius: 22px;
+            font-size: 14px;
+            outline: none;
+            background: var(--wx-bg-gray);
+        }
+
+        .advisor-drawer .input-area input:focus {
+            border-color: var(--wx-primary);
+            background: #fff;
+        }
+
+        .advisor-drawer .input-area .send-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--wx-primary);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .advisor-drawer .input-area .send-btn:hover {
+            background: var(--wx-primary-dark);
+        }
+
+        .advisor-drawer .input-area .send-btn:disabled {
+            background: var(--wx-text-weak);
+            cursor: not-allowed;
+        }
+
+        .advisor-drawer .disclaimer-text {
+            padding: 8px 16px;
+            font-size: 11px;
+            color: var(--wx-text-weak);
+            text-align: center;
+            background: var(--wx-bg-gray);
+        }
+
+        /* 遮罩层 */
+        .drawer-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+
+        .drawer-overlay.show {
+            display: block;
+        }
+
+        /* 加载动画 */
+        .advisor-drawer .loading-dots {
+            display: flex;
+            gap: 4px;
+            padding: 8px 0;
+        }
+
+        .advisor-drawer .loading-dots span {
+            width: 8px;
+            height: 8px;
+            background: var(--wx-text-weak);
+            border-radius: 50%;
+            animation: loadingDot 1.4s ease-in-out infinite;
+        }
+
+        .advisor-drawer .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .advisor-drawer .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes loadingDot {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
         /* 底部导航 - 微信小程序风格 */
         .bottom-nav {
             position: fixed;
@@ -993,20 +1284,67 @@
                 <div class="nav-tab-label">我的</div>
             </div>
         </div>
+
+        <!-- 保险顾问悬浮入口 -->
+        <div class="advisor-float-btn" id="advisor-float-btn" onclick="openAdvisorDrawer()">
+            <span class="avatar">🤖</span>
+            <span class="online-dot"></span>
+            <span class="tooltip">有疑问？问问顾问</span>
+        </div>
+
+        <!-- 保险顾问抽屉 -->
+        <div class="drawer-overlay" id="drawer-overlay" onclick="closeAdvisorDrawer()"></div>
+        <div class="advisor-drawer" id="advisor-drawer">
+            <div class="drawer-header">
+                <div class="drawer-title">保险顾问</div>
+                <div class="drawer-close" onclick="closeAdvisorDrawer()">×</div>
+            </div>
+            <div class="scope-hint">可咨询：百万医疗险、重疾险</div>
+            
+            <div class="message-list" id="advisor-message-list">
+                <!-- 消息列表 -->
+            </div>
+
+            <div class="quick-questions" id="quick-questions">
+                <div class="quick-questions-title">快捷问题</div>
+                <div class="quick-question-list">
+                    <div class="quick-question-item" onclick="sendQuickQuestion(this)">百万医疗险的免赔额是什么意思？</div>
+                    <div class="quick-question-item" onclick="sendQuickQuestion(this)">重疾险和百万医疗险有什么区别？</div>
+                    <div class="quick-question-item" onclick="sendQuickQuestion(this)">等待期出险会怎样？</div>
+                    <div class="quick-question-item" onclick="sendQuickQuestion(this)">什么情况下百万医疗险不报销？</div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="advisor-input" placeholder="输入您的问题..." onkeypress="handleAdvisorKeyPress(event)">
+                <button class="send-btn" id="advisor-send-btn" onclick="sendAdvisorMessage()">➤</button>
+            </div>
+
+            <div class="disclaimer-text">仅供参考，不构成购买建议</div>
+        </div>
     </div>
 
     <script>
+        const API_BASE_URL = 'http://localhost:3000';
+
         const appState = {
             plans: [],
             currentStep: 0,
             history: [],
-            compareResult: null
+            compareResult: null,
+            // 保险顾问智能体状态
+            advisor: {
+                isOpen: false,
+                loading: false,
+                messages: []
+            }
         };
 
         async function initApp() {
             setupEventListeners();
             renderPlans();
             loadHistoryFromLocal();
+            loadAdvisorFromLocal();
         }
         
         function loadHistoryFromLocal() {
@@ -1254,7 +1592,7 @@
                     fileName: p.file ? p.file.name : null
                 }));
                 
-                const response = await fetch('/api/analyze', {
+                const response = await fetch(API_BASE_URL + '/api/analyze', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1280,7 +1618,7 @@
         async function pollTask(taskId) {
             const checkStatus = async () => {
                 try {
-                    const response = await fetch(`/api/analyze/${taskId}`);
+                    const response = await fetch(API_BASE_URL + `/api/analyze/${taskId}`);
                     const data = await response.json();
                     
                     if (data.code === 200 && data.data) {
@@ -1616,6 +1954,238 @@
             }, 2000);
         }
 
+        // ========== 保险顾问智能体相关函数 ==========
+
+        // 话题边界关键词检测
+        const outOfScopeKeywords = ['推荐', '哪个好', '买哪个', '对比', '比较', '产品推荐', '购买', '投保', '保费预算', '划算'];
+        const otherInsuranceKeywords = ['寿险', '意外险', '车险', '家财险', '旅游险', '教育金', '年金险', '分红险'];
+
+        function checkTopicScope(question) {
+            const lowerQuestion = question.toLowerCase();
+            
+            // 检查是否询问其他险种
+            for (const keyword of otherInsuranceKeywords) {
+                if (lowerQuestion.includes(keyword)) {
+                    return {
+                        scope: 'out_of_scope',
+                        message: `抱歉，我仅支持解答百万医疗险和重疾险相关问题。关于${keyword}，建议您咨询专业的保险顾问或相关专业人士。`
+                    };
+                }
+            }
+            
+            // 检查是否在话题范围内
+            for (const keyword of outOfScopeKeywords) {
+                if (lowerQuestion.includes(keyword)) {
+                    return {
+                        scope: 'out_of_scope',
+                        message: '抱歉，我无法提供产品推荐或购买建议。建议您使用对比功能分析不同方案，或咨询专业的保险顾问获取个性化建议。'
+                    };
+                }
+            }
+            
+            return { scope: 'in_scope', message: null };
+        }
+
+        // 打开抽屉
+        function openAdvisorDrawer() {
+            appState.advisor.isOpen = true;
+            document.getElementById('advisor-drawer').classList.add('open');
+            document.getElementById('drawer-overlay').classList.add('show');
+            document.getElementById('advisor-input').focus();
+            
+            // 渲染现有消息
+            renderAdvisorMessages();
+        }
+
+        // 关闭抽屉
+        function closeAdvisorDrawer() {
+            appState.advisor.isOpen = false;
+            document.getElementById('advisor-drawer').classList.remove('open');
+            document.getElementById('drawer-overlay').classList.remove('show');
+            saveAdvisorToLocal();
+        }
+
+        // 渲染消息列表
+        function renderAdvisorMessages() {
+            const container = document.getElementById('advisor-message-list');
+            const messages = appState.advisor.messages;
+            
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: #999;">
+                        <div style="font-size: 48px; margin-bottom: 12px;">💬</div>
+                        <div style="font-size: 14px;">发送消息开始咨询</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = messages.map(msg => `
+                <div class="message-bubble ${msg.role} ${msg.status || ''}">
+                    ${escapeHtml(msg.content)}
+                </div>
+            `).join('');
+            
+            // 滚动到底部
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 加载本地存储的对话
+        function loadAdvisorFromLocal() {
+            try {
+                const saved = localStorage.getItem('insurance_advisor_messages');
+                if (saved) {
+                    appState.advisor.messages = JSON.parse(saved);
+                }
+            } catch (error) {
+                console.error('加载顾问对话失败:', error);
+            }
+        }
+
+        // 保存对话到本地
+        function saveAdvisorToLocal() {
+            try {
+                const messages = appState.advisor.messages;
+                // 限制消息数量最多50条
+                if (messages.length > 50) {
+                    appState.advisor.messages = messages.slice(-50);
+                }
+                localStorage.setItem('insurance_advisor_messages', JSON.stringify(appState.advisor.messages));
+            } catch (error) {
+                console.error('保存顾问对话失败:', error);
+            }
+        }
+
+        // 发送快捷问题
+        function sendQuickQuestion(element) {
+            const question = element.textContent;
+            document.getElementById('advisor-input').value = question;
+            sendAdvisorMessage();
+        }
+
+        // 处理回车键
+        function handleAdvisorKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendAdvisorMessage();
+            }
+        }
+
+        // 发送消息
+        async function sendAdvisorMessage() {
+            const input = document.getElementById('advisor-input');
+            const question = input.value.trim();
+            
+            if (!question || appState.advisor.loading) return;
+            
+            // 添加用户消息
+            appState.advisor.messages.push({
+                id: Date.now(),
+                role: 'user',
+                content: question,
+                timestamp: Date.now(),
+                status: 'sent'
+            });
+            
+            input.value = '';
+            renderAdvisorMessages();
+            
+            // 检查话题范围
+            const scopeCheck = checkTopicScope(question);
+            
+            if (scopeCheck.scope === 'out_of_scope') {
+                // 超范围，添加系统回复
+                setTimeout(() => {
+                    appState.advisor.messages.push({
+                        id: Date.now() + 1,
+                        role: 'assistant',
+                        content: scopeCheck.message,
+                        timestamp: Date.now(),
+                        status: 'sent'
+                    });
+                    renderAdvisorMessages();
+                    saveAdvisorToLocal();
+                }, 500);
+                return;
+            }
+            
+            // 显示加载状态
+            appState.advisor.loading = true;
+            const sendBtn = document.getElementById('advisor-send-btn');
+            sendBtn.disabled = true;
+            
+            // 添加加载中的助手消息
+            const loadingId = Date.now() + 2;
+            appState.advisor.messages.push({
+                id: loadingId,
+                role: 'assistant',
+                content: '',
+                timestamp: Date.now(),
+                status: 'loading'
+            });
+            renderAdvisorMessages();
+            
+            // 调用后端真实接口
+            try {
+                const result = await requestAdvisorChat(question);
+                
+                // 移除加载消息
+                appState.advisor.messages = appState.advisor.messages.filter(m => m.id !== loadingId);
+                
+                // 添加回复
+                appState.advisor.messages.push({
+                    id: Date.now() + 3,
+                    role: 'assistant',
+                    content: result.answer,
+                    timestamp: Date.now(),
+                    status: 'sent'
+                });
+            } catch (error) {
+                // 移除加载消息
+                appState.advisor.messages = appState.advisor.messages.filter(m => m.id !== loadingId);
+                
+                // 添加错误消息
+                appState.advisor.messages.push({
+                    id: Date.now() + 3,
+                    role: 'assistant',
+                    content: error.message || '抱歉，当前咨询人数较多，请稍后再试。',
+                    timestamp: Date.now(),
+                    status: 'error'
+                });
+            }
+            
+            appState.advisor.loading = false;
+            sendBtn.disabled = false;
+            renderAdvisorMessages();
+            saveAdvisorToLocal();
+        }
+
+        // 调用保险顾问后端API
+        async function requestAdvisorChat(question, context) {
+            try {
+                const response = await fetch(API_BASE_URL + '/api/advisor/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question, context })
+                });
+                
+                const data = await response.json();
+                if (data.code !== 200 || !data.data) {
+                    throw new Error(data.message || '咨询服务异常');
+                }
+                return data.data;
+            } catch (error) {
+                console.error('保险顾问API调用失败:', error);
+                throw error;
+            }
+        }
+
         // 全局暴露函数
         window.removePlan = removePlan;
         window.updatePlanName = updatePlanName;
@@ -1624,6 +2194,11 @@
         window.handleFileUpload = handleFileUpload;
         window.removeFile = removeFile;
         window.viewHistory = viewHistory;
+        window.openAdvisorDrawer = openAdvisorDrawer;
+        window.closeAdvisorDrawer = closeAdvisorDrawer;
+        window.sendQuickQuestion = sendQuickQuestion;
+        window.handleAdvisorKeyPress = handleAdvisorKeyPress;
+        window.sendAdvisorMessage = sendAdvisorMessage;
 
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
